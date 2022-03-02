@@ -28,9 +28,8 @@ defmodule WmsTaskWeb.PageController do
 
   def get_orders_live(conn, params) do
     user = "felipe_user1"
-
-    orders3 = get_orders_in_interval(user)
-    render(conn, "orders.json", orders: %{"sales_orders" => orders3})
+    orders = get_orders_in_interval(user)
+    render(conn, "orders.json", orders: %{"sales_orders" => orders})
   end
 
   defp get_orders_in_interval(user, interval \\ nil) do
