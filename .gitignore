@@ -35,3 +35,5 @@ npm-debug.log
 /wms_task.iml
 
 **/*.secret.exs
+
+.env
