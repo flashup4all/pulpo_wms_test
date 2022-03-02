@@ -1,4 +1,7 @@
 defmodule WmsTask.Orders.Order do
+  @moduledoc """
+    Order schema
+  """
   use Ecto.Schema
   import Ecto.Changeset
 

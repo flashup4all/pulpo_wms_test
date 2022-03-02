@@ -1,9 +1,11 @@
 defmodule WmsTaskWeb.PageController do
   use WmsTaskWeb, :controller
-  alias WmsTask.Orders.Order
-  alias WmsTask.Orders
+
   alias WmsTask.HttpHandler
   require Logger
+
+  alias WmsTask.Orders
+  alias WmsTask.Orders.Order
 
   def index(conn, _params) do
     render(conn, "index.html")
@@ -52,11 +54,12 @@ defmodule WmsTaskWeb.PageController do
       Enum.map(
         orders["sales_orders"],
         fn order ->
-          order_num = order["order_num"]
+          # order["order_num"]
+          order_num = 1
           ## ?__or_search=sales_order_num%7Ccontains%3A#{order_num}&limit=20
           {:ok, pickings} =
             HttpHandler.api_call(
-              "/api/v1/picking/orders?__or_search=sales_order_num%7Ccontains%3A1&limit=2",
+              "/api/v1/picking/orders?__or_search=sales_order_num%7Ccontains%3A#{order_num}&limit=20",
               :get,
               nil,
               headers
@@ -75,7 +78,7 @@ defmodule WmsTaskWeb.PageController do
   end
 
   def get_orders(conn, params) do
-    orders = Orders.list_orders
+    orders = Orders.list_orders()
     render(conn, "orders_model.json", orders: orders)
   end
 

@@ -1,6 +1,9 @@
 defmodule WmsTask.Orders do
+  @moduledoc """
+    Orders functions
+  """
+
   alias WmsTask.Orders.Order
-  alias WmsTask.Orders.Piking
   alias WmsTask.Repo
 
   @doc """
@@ -33,6 +36,4 @@ defmodule WmsTask.Orders do
   def list_orders do
     Repo.all(Order)
   end
-
-
 end

@@ -1,4 +1,8 @@
 defmodule WmsTask.HttpHandler do
+  @moduledoc """
+    HttpHandler
+    Handle all HTTP calls
+  """
   use HTTPoison.Base
 
   @base_url System.get_env("PULPO_BASE_URL", "https://show.pulpo.co")

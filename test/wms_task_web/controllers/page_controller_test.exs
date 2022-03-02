@@ -10,7 +10,7 @@ defmodule WmsTaskWeb.PageControllerTest do
     conn = get(conn, "/orders/live")
     response = json_response(conn, 200)
     assert response
-    assert length(response["orders"]) == 10
+    assert Map.has_key?(response, "orders")
   end
 
   test "sync", %{conn: conn} do
@@ -18,6 +18,6 @@ defmodule WmsTaskWeb.PageControllerTest do
     conn = get(conn, "/orders")
     response = json_response(conn, 200)
     assert response
-    assert length(response["orders"]) == 10
+    assert Map.has_key?(response, "orders")
   end
 end
