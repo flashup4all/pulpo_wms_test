@@ -49,7 +49,7 @@ defmodule WmsTaskWeb.PageController do
     {:ok, response} = HttpHandler.api_call("/api/v1/sales/orders#{between}", :get, nil, headers)
     orders = response.body
 
-    orders2 =
+    orders =
       Enum.map(
         orders["sales_orders"],
         fn order ->
@@ -69,9 +69,9 @@ defmodule WmsTaskWeb.PageController do
         end
       )
 
-    packings = WmsTask.get_packings(user, orders2)
+    packings = WmsTask.get_packings(user, orders)
 
-    orders = WmsTask.map_packings(orders2, packings)
+    orders = WmsTask.map_packings(orders, packings)
     create_orders(orders)
     orders
   end
