@@ -11,7 +11,12 @@ defmodule WmsTaskWeb.PageController do
     render(conn, "index.html")
   end
 
-  def auth(conn, %{"username" => username, "password" => password}) do
+  def auth(conn, auth_data) do
+    {:ok, response} = authenticate(auth_data)
+    render(conn, "auth.json", auth_data: response.body)
+  end
+
+  def authenticate(%{"username" => username, "password" => password}) do
     {:ok, response} =
       HttpHandler.api_call("/api/v1/auth", :post, %{
         "username" => username,
@@ -19,8 +24,6 @@ defmodule WmsTaskWeb.PageController do
         "grant_type" => "password",
         "scope" => "profile"
       })
-
-    render(conn, "auth.json", auth_data: response.body)
   end
 
   def get_headers(conn) do
