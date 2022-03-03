@@ -19,8 +19,8 @@ defmodule WmsTaskWeb.PageController do
         "grant_type" => "password",
         "scope" => "profile"
       })
-    render(conn, "auth.json", auth_data: response.body)
 
+    render(conn, "auth.json", auth_data: response.body)
   end
 
   def get_headers(conn) do
@@ -46,8 +46,7 @@ defmodule WmsTaskWeb.PageController do
       end
 
     headers = get_headers(conn)
-      IO.inspect HttpHandler.api_call("/api/v1/sales/orders#{between}", :get, nil, headers)
-    # {:ok, response} =
+
     HttpHandler.api_call("/api/v1/sales/orders#{between}", :get, nil, headers)
     |> case do
       {:ok, response} ->
@@ -78,16 +77,14 @@ defmodule WmsTaskWeb.PageController do
         orders = WmsTask.map_packings(orders, packings)
         create_orders(orders)
         orders
+
       {:error, :unauthorised} ->
         conn
         |> put_status(:unauthorized)
         |> Phoenix.Controller.put_view(WmsTaskWeb.ErrorView)
         |> Phoenix.Controller.render("401.json")
         |> halt()
-
     end
-
-
   end
 
   def get_orders(conn, params) do

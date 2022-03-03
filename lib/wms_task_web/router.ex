@@ -24,7 +24,6 @@ defmodule WmsTaskWeb.Router do
     # get "/", PageController, :index
     # get "/orders/live", PageController, :get_orders_live
     # get "/orders", PageController, :get_orders
-
   end
 
   # Other scopes may use custom stacks.

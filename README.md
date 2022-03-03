@@ -26,9 +26,11 @@ To start your Phoenix server:
       "password": "felipe_user1"
     }
   ```
+  * Once you are able to login add `Authorization: Bearer <access_token>` to your connection headers. Note that the access token is gotten after a successful login
+  * Call the following API's below to see result
   localhost:4000/api/orders/live
   localhost:4000/api/orders
-  `
+  
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
