@@ -24,8 +24,14 @@ defmodule WmsTask.HttpHandler do
   end
 
   def decode_response_body_data(%{status_code: status_code, body: body} = response) do
-    body = body |> Poison.decode!()
-    {:ok, %{response | body: body}}
+    case status_code do
+      200 ->
+        body = body |> Poison.decode!()
+        {:ok, %{response | body: body}}
+      401 -> {:error, :unauthorized}
+      _ -> {:error, :not_found}
+    end
+
   end
 
   def decode_response_body_data({:ok, %{status_code: status_code, body: body} = response}) do
@@ -46,15 +52,33 @@ defmodule WmsTask.HttpHandler do
           @options
         )
         |> decode_response_body_data
+        |> process_status_code
+
 
       :get ->
         url
         |> process_request_url
         |> HTTPoison.get(headers, params: params)
         |> decode_response_body_data
+        |> process_status_code
 
       _ ->
         {:error, "invalid HTTP method"}
     end
   end
+
+  def process_status_code(%{status_code: status_code, body: body} = response) do
+    case status_code do
+      200 -> {:ok, response}
+      401 -> {:error, :unauthorised}
+    end
+  end
+
+  def process_status_code({:ok, %{status_code: status_code, body: body} }= response) do
+    case status_code do
+      200 -> response
+      401 -> {:error, :unauthorised}
+    end
+  end
+
 end

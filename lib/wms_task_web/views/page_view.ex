@@ -13,6 +13,15 @@ defmodule WmsTaskWeb.PageView do
     %{username: me["username"]}
   end
 
+  def render("auth.json", %{auth_data: auth_data}) do
+    %{
+      token: auth_data["access_token"],
+      expires_in: auth_data["expires_in"],
+      scope: auth_data["scope"],
+      token_type: auth_data["token_type"]
+    }
+  end
+
   def render("orders_model.json", %{orders: orders}) do
     %{
       orders:

@@ -11,28 +11,29 @@ defmodule WmsTaskWeb.PageController do
     render(conn, "index.html")
   end
 
-  def get_headers(user) do
-    # TODO do we need both headers?
+  def auth(conn, %{"username" => username, "password" => password}) do
     {:ok, response} =
       HttpHandler.api_call("/api/v1/auth", :post, %{
-        "username" => user,
-        "password" => user,
+        "username" => username,
+        "password" => password,
         "grant_type" => "password",
         "scope" => "profile"
       })
+    render(conn, "auth.json", auth_data: response.body)
 
-    token = response.body["access_token"]
-    headers = [Authorization: "Bearer #{token}"]
-    headers
+  end
+
+  def get_headers(conn) do
+    # TODO do we need both headers?
+    headers = [Authorization: "Bearer #{conn.assigns.auth_token}"]
   end
 
   def get_orders_live(conn, params) do
-    user = "felipe_user1"
-    orders = get_orders_in_interval(user)
+    orders = get_orders_in_interval(conn)
     render(conn, "orders.json", orders: %{"sales_orders" => orders})
   end
 
-  defp get_orders_in_interval(user, interval \\ nil) do
+  defp get_orders_in_interval(conn, interval \\ nil) do
     between =
       case interval do
         nil ->
@@ -44,36 +45,49 @@ defmodule WmsTaskWeb.PageController do
           "?updated_at=between:#{DateTime.to_iso8601(from)},#{DateTime.to_iso8601(to)}"
       end
 
-    headers = get_headers(user)
+    headers = get_headers(conn)
+      IO.inspect HttpHandler.api_call("/api/v1/sales/orders#{between}", :get, nil, headers)
+    # {:ok, response} =
+    HttpHandler.api_call("/api/v1/sales/orders#{between}", :get, nil, headers)
+    |> case do
+      {:ok, response} ->
+        orders = response.body
 
-    {:ok, response} = HttpHandler.api_call("/api/v1/sales/orders#{between}", :get, nil, headers)
-    orders = response.body
+        orders =
+          Enum.map(
+            orders["sales_orders"],
+            fn order ->
+              # order["order_num"]
+              order_num = 1
+              ## ?__or_search=sales_order_num%7Ccontains%3A#{order_num}&limit=20
+              {:ok, pickings} =
+                HttpHandler.api_call(
+                  "/api/v1/picking/orders?__or_search=sales_order_num%7Ccontains%3A#{order_num}&limit=20",
+                  :get,
+                  nil,
+                  headers
+                )
 
-    orders =
-      Enum.map(
-        orders["sales_orders"],
-        fn order ->
-          # order["order_num"]
-          order_num = 1
-          ## ?__or_search=sales_order_num%7Ccontains%3A#{order_num}&limit=20
-          {:ok, pickings} =
-            HttpHandler.api_call(
-              "/api/v1/picking/orders?__or_search=sales_order_num%7Ccontains%3A#{order_num}&limit=20",
-              :get,
-              nil,
-              headers
-            )
+              [picking | _] = pickings.body["picking_orders"]
+              Map.put(order, "picking", picking)
+            end
+          )
 
-          [picking | _] = pickings.body["picking_orders"]
-          Map.put(order, "picking", picking)
-        end
-      )
+        packings = WmsTask.get_packings(conn, orders)
 
-    packings = WmsTask.get_packings(user, orders)
+        orders = WmsTask.map_packings(orders, packings)
+        create_orders(orders)
+        orders
+      {:error, :unauthorised} ->
+        conn
+        |> put_status(:unauthorized)
+        |> Phoenix.Controller.put_view(WmsTaskWeb.ErrorView)
+        |> Phoenix.Controller.render("401.json")
+        |> halt()
 
-    orders = WmsTask.map_packings(orders, packings)
-    create_orders(orders)
-    orders
+    end
+
+
   end
 
   def get_orders(conn, params) do
@@ -81,9 +95,8 @@ defmodule WmsTaskWeb.PageController do
     render(conn, "orders_model.json", orders: orders)
   end
 
-  def sync_orders(interval \\ 1) do
-    user = "felipe_user1"
-    orders = get_orders_in_interval(user, interval)
+  def sync_orders(conn, interval \\ 1) do
+    orders = get_orders_in_interval(conn, interval)
     orders = WmsTask.map_to_order_model(orders)
 
     Logger.info("writing #{inspect(length(orders))} orders to the DB")

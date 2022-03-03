@@ -19,6 +19,13 @@ To start your Phoenix server:
   * Install Node.js dependencies with `npm install` inside the `assets` directory
   * Start Phoenix endpoint with `mix phx.server`
   * Use Postman or any API utility tool to access the following API's `
+  * Login using 
+  ```
+    {
+      "username": "felipe_user1",
+      "password": "felipe_user1"
+    }
+  ```
   localhost:4000/api/orders/live
   localhost:4000/api/orders
   `
